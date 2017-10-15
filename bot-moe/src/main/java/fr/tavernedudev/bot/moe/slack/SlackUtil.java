@@ -16,8 +16,6 @@ import java.util.List;
  */
 public class SlackUtil {
 
-    // https://slack.com/api/users.info?token=xoxp-70601762133-70594891168-71807316609-884246b908&user=U22HGS74Y&pretty=1
-
     private String token;
     private List<Object> users;
 
