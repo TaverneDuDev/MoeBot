@@ -1,11 +1,6 @@
 language: java
 sudo: true
 install: true
-addons:
-  sonarcloud:
-    organization: "tdd"
-    token:
-      secure: "96fd56d655c0572f286d89397bae31a605419672"
 jdk:
   - oraclejdk8
 script:
