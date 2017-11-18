@@ -17,7 +17,7 @@ import me.ramswaroop.jbot.core.slack.models.User;
  * @author Sébastien Vermeille <sebastien.vermeille@gmail.com>
  */
 public class UserInfo {
-
+    //TODO: see if it is boolean
     private String ok;
     private User user;
 
