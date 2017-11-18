@@ -18,9 +18,10 @@ this bot can do a lot of things just wait for him to be finished
 ## Authors
 Sébastien Vermeille <sebastien.vermeille@gmail.com> (maintainer)
 
-## Launch
+## Development
 
+Launch locally:
 > gradle bootRun
 
-## Build
-gradle
+Build executable jar:
+> gradle bootJar
