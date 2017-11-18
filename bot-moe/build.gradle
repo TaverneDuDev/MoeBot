@@ -9,6 +9,7 @@
 buildscript {
     ext {
         springBootVersion = '2.0.0.BUILD-SNAPSHOT'
+        sonarqubeVersion = '6.7'
     }
     repositories {
         mavenCentral()
@@ -16,6 +17,7 @@ buildscript {
     }
     dependencies {
         classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+        compile group: 'org.sonarsource.sonarqube', name: 'sonar-plugin-api', version: '6.7'
     }
 }
 
@@ -44,8 +46,4 @@ jar {
     manifest {
         attributes 'Main-Class': 'fr.tavernedudev.bot.moe.MoeBot'
     }
-}
-
-task build(){
-
 }
