@@ -9,7 +9,6 @@
 buildscript {
     ext {
         springBootVersion = '2.0.0.BUILD-SNAPSHOT'
-        sonarqubeVersion = '6.7'
     }
     repositories {
         mavenCentral()
@@ -17,13 +16,14 @@ buildscript {
     }
     dependencies {
         classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
-        compile group: 'org.sonarsource.sonarqube', name: 'sonar-plugin-api', version: '6.7'
+        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.5"
     }
 }
 
 apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'org.sonarqube'
 
 group 'fr.tavernedudev'
 version '1.0-SNAPSHOT'
