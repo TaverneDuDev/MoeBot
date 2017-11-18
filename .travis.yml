@@ -9,7 +9,7 @@ addons:
 jdk:
   - oraclejdk8
 script:
-  - ./bot-moe/gradlew sonarqube
+  - ./bot-moe/gradlew sonarqube -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=tdd -Dsonar.login=96fd56d655c0572f286d89397bae31a605419672
 cache:
   directories:
     - '$HOME/.m2/repository'
