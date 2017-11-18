@@ -1,3 +1,11 @@
+/*
+ * This file is part of the Moe-Bot package
+ * Copyright (c) 2017. Sébastien Vermeille <sebastien.vermeille@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 package fr.tavernedudev.bot.moe.slack;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,14 +22,9 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.PostConstruct;
 
 /**
- * This is a Slack Webhook sample. Webhooks are nothing but POST calls to
- * Slack with data relevant to your users. You can send the data
- * in the POST call in either ways:
- * 1) Send as a JSON string as the payload parameter in a POST request
- * 2) Send as a JSON string as the body of a POST request
+ * SlackWebhooks
  *
- * @author ramswaroop
- * @version 1.0.0, 21/06/2016
+ * @author Sébastien Vermeille <sebastien.vermeille@gmail.com>
  */
 @Component
 public class SlackWebhooks {

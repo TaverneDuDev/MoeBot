@@ -1,10 +1,21 @@
+/*
+ * This file is part of the Moe-Bot package
+ * Copyright (c) 2017. Sébastien Vermeille <sebastien.vermeille@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 package fr.tavernedudev.bot.moe.slack;
 
-import fr.tavernedudev.bot.moe.slack.model.UserInfo;
+import ch.sbeex.slack.api.SlackClient;
+import ch.sbeex.slack.api.SlackClientImpl;
+import ch.sbeex.slack.api.model.UserInfo;
+import ch.sbeex.slack.api.model.channel.Channel;
+import ch.sbeex.slack.api.model.channel.ChannelInfo;
 import me.ramswaroop.jbot.core.slack.Bot;
 import me.ramswaroop.jbot.core.slack.Controller;
 import me.ramswaroop.jbot.core.slack.EventType;
-import me.ramswaroop.jbot.core.slack.SlackService;
 import me.ramswaroop.jbot.core.slack.models.Event;
 import me.ramswaroop.jbot.core.slack.models.Message;
 import org.slf4j.Logger;
@@ -13,19 +24,23 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
+import java.util.Optional;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * A Slack Bot sample. You can create multiple bots by just
- * extending {@link Bot} class like this one.
+ * SlackBot class
+ * Establish the behaviors of MoeBot
  *
- * @author ramswaroop
- * @version 1.0.0, 05/06/2016
+ * @author Sébastien Vermeille <sebastien.vermeille@gmail.com>
  */
 @Component
 public class SlackBot extends Bot {
 
     private static final Logger logger = LoggerFactory.getLogger(SlackBot.class);
+    private static final String URL_REGEX = "((http:\\/\\/|https:\\/\\/)?(www.)?(([a-zA-Z0-9-]){2,}\\.){1,4}([a-zA-Z]){2,6}(\\/([a-zA-Z-_\\/\\.0-9#:?=&;,]*)?)?)";
+
+    private SlackClient util;
 
     /**
      * Slack token from application.properties file. You can get your slack token
@@ -34,11 +49,14 @@ public class SlackBot extends Bot {
     @Value("${slackBotToken}")
     private String slackToken;
 
+    @Value("${slackAdminToken}")
+    private String slackAdminToken;
+
     @Override
     public void afterConnectionEstablished(WebSocketSession session){
         logger.info("Websocket connected");
 
-
+        this.util = new SlackClientImpl(getSlackToken(), getSlackAdminToken());
     }
 
     @Override
@@ -46,183 +64,70 @@ public class SlackBot extends Bot {
         return slackToken;
     }
 
+    public String getSlackAdminToken(){
+        return slackAdminToken;
+    }
+
     @Override
     public Bot getSlackBot() {
         return this;
     }
 
-    /**
-     * Invoked when the bot receives a direct mention (@botname: message)
-     * or a direct message. NOTE: These two event types are added by jbot
-     * to make your task easier, Slack doesn't have any direct way to
-     * determine these type of events.
-     *
-     * @param session
-     * @param event
-     */
-    @Controller(events = {EventType.DIRECT_MENTION, EventType.DIRECT_MESSAGE})
-    public void onReceiveDM(WebSocketSession session, Event event) {
-        reply(session, event, new Message("Hi, I am " + slackService.getCurrentUser().getName()));
+    private SlackClient getUtil(){
+        return this.util;
     }
 
     /**
-     * Invoked when bot receives an event of type message with text satisfying
-     * the pattern {@code ([a-z ]{2})(\d+)([a-z ]{2})}. For example,
-     * messages like "ab12xy" or "ab2bc" etc will invoke this method.
+     * Invoked when bot receives an event of type message with text satisfying the given pattern
      *
      * @param session
      * @param event
      */
-    @Controller(events = EventType.MESSAGE, pattern = "(yop|hello|bonjour|salu|salut|plop)")
-    public void onReceiveGreetingMessage(WebSocketSession session, Event event, Matcher matcher) {
-
-        SlackUtil util = new SlackUtil(getSlackToken());
-        UserInfo userInfo = util.getUserInfo(event.getUserId());
-
-        reply(session, event, new Message("Salut "+userInfo.getUser().getName()+" ! "));
-    }
-
-
-    /**
-     * Invoked when bot receives an event of type message with text satisfying
-     * the pattern {@code ([a-z ]{2})(\d+)([a-z ]{2})}. For example,
-     * messages like "ab12xy" or "ab2bc" etc will invoke this method.
-     *
-     * @param session
-     * @param event
-     */
-    @Controller(events = EventType.MESSAGE, pattern = "(~ask)")
-    public void onReceiveAskMessage(WebSocketSession session, Event event, Matcher matcher) {
-        reply(session, event, new Message("Le meilleur moyen de savoir si quelqu'un a la réponse c'est de poser la question tu ne crois pas ?"));
-    }
-
-    /**
-     * Invoked when bot receives an event of type message with text satisfying
-     * the pattern {@code ([a-z ]{2})(\d+)([a-z ]{2})}. For example,
-     * messages like "ab12xy" or "ab2bc" etc will invoke this method.
-     *
-     * @param session
-     * @param event
-     */
-    @Controller(events = EventType.MESSAGE, pattern = "(~google)")
-    public void onReceiveGoogleMessage(WebSocketSession session, Event event, Matcher matcher) {
-        reply(session, event, new Message("As-tu au moins demandé à google ?"));
-    }
-
-    /**
-     * Invoked when bot receives an event of type message with text satisfying
-     * the pattern {@code ([a-z ]{2})(\d+)([a-z ]{2})}. For example,
-     * messages like "ab12xy" or "ab2bc" etc will invoke this method.
-     *
-     * @param session
-     * @param event
-     */
-    @Controller(events = EventType.MESSAGE, pattern = "(question)")
-    public void onReceiveQuestionMessage(WebSocketSession session, Event event, Matcher matcher) {
-        reply(session, event, new Message("test"));
-    }
-
-    /**
-     * Invoked when bot receives an event of type message with text satisfying
-     * the pattern {@code ([a-z ]{2})(\d+)([a-z ]{2})}. For example,
-     * messages like "ab12xy" or "ab2bc" etc will invoke this method.
-     *
-     * @param session
-     * @param event
-     */
-    @Controller(events = EventType.MESSAGE, pattern = "^([a-z ]{2})(\\d+)([a-z ]{2})$")
+    @Controller(events = EventType.MESSAGE, pattern = "^(.*)$")
     public void onReceiveMessage(WebSocketSession session, Event event, Matcher matcher) {
-        reply(session, event, new Message("First group: " + matcher.group(0) + "\n" +
-                "Second group: " + matcher.group(1) + "\n" +
-                "Third group: " + matcher.group(2) + "\n" +
-                "Fourth group: " + matcher.group(3)));
-    }
 
-    /**
-     * Invoked when an item is pinned in the channel.
-     *
-     * @param session
-     * @param event
-     */
-    @Controller(events = EventType.PIN_ADDED)
-    public void onPinAdded(WebSocketSession session, Event event) {
-        reply(session, event, new Message("Thanks for the pin! You can find all pinned items under channel details."));
-    }
-
-    /**
-     * Invoked when bot receives an event of type file shared.
-     * NOTE: You can't reply to this event as slack doesn't send
-     * a channel id for this event type. You can learn more about
-     * <a href="https://api.slack.com/events/file_shared">file_shared</a>
-     * event from Slack's Api documentation.
-     *
-     * @param session
-     * @param event
-     */
-    @Controller(events = EventType.FILE_SHARED)
-    public void onFileShared(WebSocketSession session, Event event) {
-        logger.info("File shared: {}", event);
-    }
-
-
-    /**
-     * Conversation feature of JBot. This method is the starting point of the conversation (as it
-     * calls {@link Bot#startConversation(Event, String)} within it. You can chain methods which will be invoked
-     * one after the other leading to a conversation. You can chain methods with {@link Controller#next()} by
-     * specifying the method name to chain with.
-     *
-     * @param session
-     * @param event
-     */
-    @Controller(pattern = "(setup meeting)", next = "confirmTiming")
-    public void setupMeeting(WebSocketSession session, Event event) {
-        startConversation(event, "confirmTiming");   // start conversation
-        reply(session, event, new Message("Cool! At what time (ex. 15:30) do you want me to set up the meeting?"));
-    }
-
-    /**
-     * This method is chained with {@link SlackBot#setupMeeting(WebSocketSession, Event)}.
-     *
-     * @param session
-     * @param event
-     */
-    @Controller(next = "askTimeForMeeting")
-    public void confirmTiming(WebSocketSession session, Event event) {
-        reply(session, event, new Message("Your meeting is set at " + event.getText() +
-                ". Would you like to repeat it tomorrow?"));
-        nextConversation(event);    // jump to next question in conversation
-    }
-
-    /**
-     * This method is chained with {@link SlackBot#confirmTiming(WebSocketSession, Event)}.
-     *
-     * @param session
-     * @param event
-     */
-    @Controller(next = "askWhetherToRepeat")
-    public void askTimeForMeeting(WebSocketSession session, Event event) {
-        if (event.getText().contains("yes")) {
-            reply(session, event, new Message("Okay. Would you like me to set a reminder for you?"));
-            nextConversation(event);    // jump to next question in conversation  
-        } else {
-            reply(session, event, new Message("No problem. You can always schedule one with 'setup meeting' command."));
-            stopConversation(event);    // stop conversation only if user says no
+        if(event.getUserId() == null || event.getUserId().equals("U7K7XU5AS")){
+            return;
         }
+
+        String message = matcher.group(0);
+        System.out.println("message = "+ message);
+        Optional<Channel> debugChannel = getUtil().getChannelByName("debug");
+
+        if(debugChannel.isPresent() && debugChannel.get().getId().equals(event.getChannelId())){
+
+
+            ChannelInfo channelInfo = this.getUtil().getChannelInfo(event.getChannelId());
+
+            if(channelInfo.getChannel().getLatest().isSubTopic()){
+                return;
+            }
+
+            if(!isMessageContainsUrl(message)){
+
+                UserInfo writerInfos = this.getUtil().getUserInfo(channelInfo.getChannel().getLatest().getUser());
+
+                reply(session, event, new Message("Désolé " + writerInfos.getUser().getName() + " mais on ne poste que des liens ici"));
+                this.getUtil().deleteMessage(event.getChannelId(), channelInfo.getChannel().getLatest().getTs());
+            } else {
+                System.out.println("GREAT");
+                this.getUtil().addReaction("thumbsup", event.getChannelId(), channelInfo.getChannel().getLatest().getTs());
+                this.getUtil().addReaction("thumbsdown", event.getChannelId(), channelInfo.getChannel().getLatest().getTs());
+            }
+
+        }
+
     }
 
     /**
-     * This method is chained with {@link SlackBot#askTimeForMeeting(WebSocketSession, Event)}.
-     *
-     * @param session
-     * @param event
+     * Returns true when the given message contains a plain full valid url
+     * @param message the message to evaluate
+     * @return true when url is found
      */
-    @Controller
-    public void askWhetherToRepeat(WebSocketSession session, Event event) {
-        if (event.getText().contains("yes")) {
-            reply(session, event, new Message("Great! I will remind you tomorrow before the meeting."));
-        } else {
-            reply(session, event, new Message("Oh! my boss is smart enough to remind himself :)"));
-        }
-        stopConversation(event);    // stop conversation
+    private boolean isMessageContainsUrl(String message) {
+        Pattern p = Pattern.compile(URL_REGEX);
+        Matcher m = p.matcher(message);//replace with string to compare
+        return m.find();
     }
+
 }

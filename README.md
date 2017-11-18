@@ -11,3 +11,10 @@ this bot can do a lot of things just wait for him to be finished
 
 ## Authors
 Sébastien Vermeille <sebastien.vermeille@gmail.com> (maintainer)
+
+## Launch
+
+> gradle bootRun
+
+## Build
+gradle

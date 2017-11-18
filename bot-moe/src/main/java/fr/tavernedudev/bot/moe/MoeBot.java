@@ -1,11 +1,20 @@
+/*
+ * This file is part of the Moe-Bot package
+ * Copyright (c) 2017. Sébastien Vermeille <sebastien.vermeille@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 package fr.tavernedudev.bot.moe;
 
-import fr.tavernedudev.bot.moe.slack.SlackUtil;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * Created by sbeex on 14.10.17.
+ * MoeBot main class
+ *
+ * @author Sébastien Vermeille <sebastien.vermeille@gmail.com>
  */
 @SpringBootApplication(scanBasePackages = {"me.ramswaroop.jbot", "fr.tavernedudev.bot.moe"})
 public class MoeBot {
