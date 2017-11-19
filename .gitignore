@@ -235,4 +235,5 @@ gradle-app.setting
 
 # End of https://www.gitignore.io/api/java,linux,macos,gradle,eclipse,windows,netbeans,intellij+iml
 
-bot-moe/src/main/resources/application.properties
+bot-moe/src/main/resources/application-dev.properties
+bot-moe/src/main/resources/application-prod.properties
