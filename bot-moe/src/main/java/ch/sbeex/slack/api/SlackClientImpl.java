@@ -18,8 +18,11 @@ import ch.sbeex.slack.api.model.channel.ChannelsList;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,9 +34,11 @@ import java.util.Optional;
  */
 public class SlackClientImpl implements SlackClient {
 
+    private static final Logger logger = LoggerFactory.getLogger(SlackClientImpl.class);
+
+
     private String token;
     private String adminToken;
-    private List<Channel> channels;
 
     private OkHttpClient client;
 
@@ -41,8 +46,6 @@ public class SlackClientImpl implements SlackClient {
         this.token = token;
         this.adminToken = adminToken;
         client = new OkHttpClient();
-
-        this.channels = this.getChannels();
 
     }
 
@@ -56,11 +59,9 @@ public class SlackClientImpl implements SlackClient {
             String content = response.body().string();
             Gson gson = new Gson();
 
-            UserInfo userInfo = gson.fromJson(content, UserInfo.class);
-
-            return userInfo;
+            return gson.fromJson(content, UserInfo.class);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.warn("Unable to get user info for user with id={} (exception={})", userId, e);
             return null;
         }
 
@@ -74,7 +75,7 @@ public class SlackClientImpl implements SlackClient {
         try {
             Response response = client.newCall(request).execute();
             String jsonContent = response.body().string();
-            System.out.println("JSON: "+jsonContent);
+            logger.debug("JSON: {}", jsonContent);
 
             final Gson gson = new GsonBuilder()
                     .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
@@ -82,11 +83,11 @@ public class SlackClientImpl implements SlackClient {
 
 
             ChannelInfo channelInfo = gson.fromJson(jsonContent, ChannelInfo.class);
-            System.out.println("UNSERIALIZED: "+channelInfo.toString());
+            logger.debug("UNSERIALIZED: {}", channelInfo.toString());
 
             return channelInfo;
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.warn("Unable to get channel info for channel with id={} (exception={})", channelId, e);
             return null;
         }
     }
@@ -97,26 +98,25 @@ public class SlackClientImpl implements SlackClient {
         try {
             Response response = client.newCall(request).execute();
             String content = response.body().string();
-            System.out.println("Added reaction:");
-            System.out.println(content);
+            logger.debug("Added reaction: {}", content);
 
         } catch (IOException e) {
-           e.printStackTrace();
+            logger.warn("Unable to add a reaction with emoji={} to channelId={} and timestamp={} (exception={})", emoji, channelId, timestamp, e);
         }
     }
 
     @Override
     public void deleteMessage(String channelId, String timestamp){
         String url = "https://slack.com/api/chat.delete?token=" + this.adminToken + "&channel=" + channelId + "&ts=" + timestamp + "&as_user=true";
-        System.out.println(url);
+        logger.debug(url);
         Request request = new Request.Builder().url(url).build();
         try {
             Response response = client.newCall(request).execute();
             String content = response.body().string();
-            System.out.println(content);
+            logger.debug("Delete message content : {}", content);
 
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.warn("Unable to delete message in channelId={} and timestamp={} (exception={})", channelId, timestamp, e);
         }
     }
 
@@ -132,18 +132,18 @@ public class SlackClientImpl implements SlackClient {
             Gson gson = new Gson();
 
             ChannelsList channels = gson.fromJson(content, ChannelsList.class);
-            System.out.println(channels.getChannels().size());
+            logger.debug("Found {} channels", channels.getChannels().size());
             return channels.getChannels();
         } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+            logger.warn("Unable to get list of channels (exception={})", e);
+            return Collections.emptyList();
         }
 
     }
 
     @Override
     public Optional<Channel> getChannelByName(String name) {
-        for(Channel c : this.channels){
+        for(Channel c : getChannels()){
             if(c.getName().equals(name)){
                 return Optional.of(c);
             }

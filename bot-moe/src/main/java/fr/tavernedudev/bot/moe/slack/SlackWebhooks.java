@@ -8,8 +8,6 @@
 
 package fr.tavernedudev.bot.moe.slack;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import me.ramswaroop.jbot.core.slack.models.Attachment;
 import me.ramswaroop.jbot.core.slack.models.RichMessage;
 import org.slf4j.Logger;
@@ -52,15 +50,9 @@ public class SlackWebhooks {
         attachments[0].setText("Reason: reboot");
         richMessage.setAttachments(attachments);
 
-        // For debugging purpose only
-        try {
-            logger.debug("Reply (RichMessage): {}", new ObjectMapper().writeValueAsString(richMessage));
-        } catch (JsonProcessingException e) {
-            logger.debug("Error parsing RichMessage: ", e);
-        }
-
         // Always remember to send the encoded message to Slack
         try {
+            logger.debug("webhook url={}", slackIncomingWebhookUrl);
             restTemplate.postForEntity(slackIncomingWebhookUrl, richMessage.encodedMessage(), String.class);
         } catch (RestClientException e) {
             logger.error("Error posting to Slack Incoming Webhook: ", e);

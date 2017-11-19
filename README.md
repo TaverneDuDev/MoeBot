@@ -7,21 +7,41 @@ Moe Bot
 
 
 
-A free gift for TaverneDuDev community
-this bot can do a lot of things just wait for him to be finished
+A free gift written in Java for TaverneDuDev community
 
-## Prerequisites
+## Features
 
-* JavaSE 8
-* Gradle
+* Prevent slack user from adding something else than an url in a
+specific channel
+* Automatically add :+1: :-1: reactions to new messages of this channel
 
 ## Authors
 Sébastien Vermeille <sebastien.vermeille@gmail.com> (maintainer)
 
-## Development
+## Prerequisites
+
+* Java8
+
+## Development (dev)
+
+Create this file `bot-moe/src/main/resources/application-dev.properties`
+Copy the content of application.properties but fill up the variables.
 
 Launch locally:
-> gradle bootRun
+> gradlew bootRun -Dspring.profiles.active=dev
+
+**Note:** this file is ignored from git
+
+## Deployment (prod)
+
+Create this file `bot-moe/src/main/resources/application-prod.properties`
+
+Copy the content of application.properties but fill up the variables.
 
 Build executable jar:
-> gradle bootJar
+> gradlew bootJar -Dspring.profiles.active=prod
+
+Run:
+> java -jar /bot-moe/build/libs/bot-moe-*.jar
+
+Tadaa
