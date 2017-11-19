@@ -46,6 +46,9 @@ jar {
     }
 }
 
+/**
+ * Install the gradlew wrapper with the specified version
+ */
 task wrapper(type: Wrapper) {
     gradleVersion = '4.2.1'
 }

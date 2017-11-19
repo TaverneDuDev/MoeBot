@@ -91,7 +91,6 @@ public class SlackBot extends Bot {
         }
 
         String message = matcher.group(0);
-        System.out.println("message = "+ message);
         Optional<Channel> debugChannel = getUtil().getChannelByName("debug");
 
         if(debugChannel.isPresent() && debugChannel.get().getId().equals(event.getChannelId())){
@@ -110,7 +109,6 @@ public class SlackBot extends Bot {
                 reply(session, event, new Message("Désolé " + writerInfos.getUser().getName() + " mais on ne poste que des liens ici"));
                 this.getUtil().deleteMessage(event.getChannelId(), channelInfo.getChannel().getLatest().getTs());
             } else {
-                System.out.println("GREAT");
                 this.getUtil().addReaction("thumbsup", event.getChannelId(), channelInfo.getChannel().getLatest().getTs());
                 this.getUtil().addReaction("thumbsdown", event.getChannelId(), channelInfo.getChannel().getLatest().getTs());
             }
