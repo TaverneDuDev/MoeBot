@@ -11,20 +11,23 @@ package fr.tavernedudev.bot.moe.slack;
 import ch.sbeex.slack.api.SlackClient;
 import ch.sbeex.slack.api.SlackClientImpl;
 import ch.sbeex.slack.api.model.UserInfo;
-import ch.sbeex.slack.api.model.channel.Channel;
 import ch.sbeex.slack.api.model.channel.ChannelInfo;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import fr.tavernedudev.bot.moe.utils.Nullable;
 import me.ramswaroop.jbot.core.slack.Bot;
 import me.ramswaroop.jbot.core.slack.Controller;
 import me.ramswaroop.jbot.core.slack.EventType;
 import me.ramswaroop.jbot.core.slack.models.Event;
 import me.ramswaroop.jbot.core.slack.models.Message;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
-import java.util.Optional;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,6 +54,12 @@ public class SlackBot extends Bot {
 
     @Value("${slackAdminToken}")
     private String slackAdminToken;
+
+    @Value("${botUserId}")
+    private String botUserId;
+
+    @Value("#{'${linkOnlyChannels}'.split(',')}")
+    private List<String> linkOnlyChannels;
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session){
@@ -86,35 +95,52 @@ public class SlackBot extends Bot {
     @Controller(events = EventType.MESSAGE, pattern = "^(.*)$")
     public void onReceiveMessage(WebSocketSession session, Event event, Matcher matcher) {
 
-        if(event.getUserId() == null || event.getUserId().equals("U7K7XU5AS")){
+        if(!shouldDoSomething(event)){
             return;
         }
 
         String message = matcher.group(0);
-        Optional<Channel> debugChannel = getUtil().getChannelByName("debug");
+        ChannelInfo channelInfo = this.getUtil().getChannelInfo(event.getChannelId());
+        if(!isMessageContainsUrl(message)){
+            UserInfo writerInfos = this.getUtil().getUserInfo(channelInfo.getChannel().getLatest().getUser());
+            reply(session, event, new Message("Désolé " + writerInfos.getUser().getName() + " mais on ne poste que des liens ici"));
+            this.getUtil().deleteMessage(event.getChannelId(), channelInfo.getChannel().getLatest().getTs());
+        } else {
+            this.getUtil().addReaction("thumbsup", event.getChannelId(), channelInfo.getChannel().getLatest().getTs());
+            this.getUtil().addReaction("thumbsdown", event.getChannelId(), channelInfo.getChannel().getLatest().getTs());
+        }
+    }
 
-        if(debugChannel.isPresent() && debugChannel.get().getId().equals(event.getChannelId())){
+    private boolean shouldDoSomething(@Nullable Event event) {
+        return event != null && !isBot(event.getUserId()) && isALinkOnlyChannel(event.getChannelId()) && !isLastPostInChannelASubtopicMessage(event.getChannelId());
+    }
 
+    @VisibleForTesting
+    boolean isBot(@Nullable String userId) {
+        return userId != null && userId.equals(getBotUserId());
+    }
 
-            ChannelInfo channelInfo = this.getUtil().getChannelInfo(event.getChannelId());
-
-            if(channelInfo.getChannel().getLatest().isSubTopic()){
-                return;
-            }
-
-            if(!isMessageContainsUrl(message)){
-
-                UserInfo writerInfos = this.getUtil().getUserInfo(channelInfo.getChannel().getLatest().getUser());
-
-                reply(session, event, new Message("Désolé " + writerInfos.getUser().getName() + " mais on ne poste que des liens ici"));
-                this.getUtil().deleteMessage(event.getChannelId(), channelInfo.getChannel().getLatest().getTs());
-            } else {
-                this.getUtil().addReaction("thumbsup", event.getChannelId(), channelInfo.getChannel().getLatest().getTs());
-                this.getUtil().addReaction("thumbsdown", event.getChannelId(), channelInfo.getChannel().getLatest().getTs());
-            }
-
+    private boolean isALinkOnlyChannel(@Nullable String channelId){
+        if(StringUtils.isBlank(channelId)){
+            return false;
         }
 
+        ChannelInfo channelInfo = this.getUtil().getChannelInfo(channelId);
+
+        if(channelInfo.getChannel()==null || StringUtils.isBlank(channelInfo.getChannel().getName())){
+            return false;
+        }
+
+        String channelName = channelInfo.getChannel().getName();
+        return linkOnlyChannels.contains(channelName);
+    }
+
+    private boolean isLastPostInChannelASubtopicMessage(String channelId){
+        String errorMessage = "Cannot determine if the last post is a subtopic because channelId is null";
+        Preconditions.checkNotNull(channelId, errorMessage);
+
+        ChannelInfo channelInfo = this.getUtil().getChannelInfo(channelId);
+        return channelInfo.getChannel().getLatest().isSubTopic();
     }
 
     /**
@@ -126,6 +152,10 @@ public class SlackBot extends Bot {
         Pattern p = Pattern.compile(URL_REGEX);
         Matcher m = p.matcher(message);//replace with string to compare
         return m.find();
+    }
+
+    public String getBotUserId(){
+        return this.botUserId;
     }
 
 }
