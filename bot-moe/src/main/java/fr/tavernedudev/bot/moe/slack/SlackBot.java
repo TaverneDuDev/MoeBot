@@ -112,7 +112,7 @@ public class SlackBot extends Bot {
     }
 
     private boolean shouldDoSomething(@Nullable Event event) {
-        return event != null && !isBot(event.getUserId()) && isALinkOnlyChannel(event.getChannelId()) && !isLastPostInChannelASubtopicMessage(event.getChannelId());
+        return event != null && event.getUserId()!=null && !isBot(event.getUserId()) && isALinkOnlyChannel(event.getChannelId()) && !isLastPostInChannelASubtopicMessage(event.getChannelId());
     }
 
     @VisibleForTesting
@@ -120,7 +120,8 @@ public class SlackBot extends Bot {
         return userId != null && userId.equals(getBotUserId());
     }
 
-    private boolean isALinkOnlyChannel(@Nullable String channelId){
+    @VisibleForTesting
+    boolean isALinkOnlyChannel(@Nullable String channelId){
         if(StringUtils.isBlank(channelId)){
             return false;
         }
