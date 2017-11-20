@@ -25,20 +25,6 @@ public class SlackBotTest {
     }
 
     @Test
-    public void isBotShouldNotThrowAnyExceptionWhenNullParameterIsGiven() throws Exception {
-
-        // Given
-        String nullParameter = null;
-
-        // When
-        slackbot.isBot(nullParameter);
-
-        // Then
-        // no exception should occurs
-
-    }
-
-    @Test
     public void isBotShouldReturnFalseWhenNullParameterIsGiven() throws Exception {
 
         // Given
@@ -82,5 +68,21 @@ public class SlackBotTest {
         assertFalse(actualResponse);
 
     }
+
+    @Test
+    public void isALinkChannelShouldReturnFalseWhenNullIsGiven() throws Exception {
+
+        // Given
+        String nullChannelId = null;
+
+        // When
+        boolean actualResponse = slackbot.isALinkOnlyChannel(nullChannelId);
+
+        // Then
+        assertFalse(actualResponse);
+
+    }
+
+
 
 }
