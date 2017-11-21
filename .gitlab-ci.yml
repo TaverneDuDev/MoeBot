@@ -1,0 +1,41 @@
+image: docker:latest
+services:
+  - docker:dind
+
+variables:
+    CONTAINER_IMAGE: $GITLAB_REGISTRY:$CI_BUILD_REF_NAME
+
+stages:
+  - compile
+  - build
+  - deploy
+
+compile:
+  image: java:8-jdk
+  stage: compile
+  before_script:
+    - "cd bot-moe"
+  script:
+    -  curl -o src/main/resources/application-dev.properties $APPLICATION_DEV_PROPERTIES_URL?private_token=$GITLAB_API_TOKEN
+    - ./gradlew bootJar
+  artifacts:
+    paths:
+      - bot-moe/build/libs/*.jar
+    expire_in: 1 week
+
+build:
+ stage: build
+ dependencies:
+    - compile
+ script:
+   - docker build -t $CONTAINER_IMAGE .
+   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+   - docker push $CONTAINER_IMAGE
+
+deploy:
+  stage: deploy
+  image: cdrx/rancher-gitlab-deploy
+  only:
+    - master
+  script:
+    - upgrade --environment $RANCHER_ENV --stack $RANCHER_STACK --service $RANCHER_SERVICE --no-start-before-stopping --finish-upgrade
