@@ -15,6 +15,11 @@ A free gift written in Java for TaverneDuDev community
 specific channel
 * Automatically add :+1: :-1: reactions to new messages of this channel
 
+## Todo
+
+* Count amount of like dislike and automatically remove the message if a specified ratio is reached.
+* Improve test coverage
+
 ## Authors
 Sébastien Vermeille <sebastien.vermeille@gmail.com> (maintainer)
 
