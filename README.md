@@ -3,7 +3,7 @@ Moe Bot
 
 [![Build Status](https://travis-ci.org/TaverneDuDev/MoeBot.svg?branch=master)](https://travis-ci.org/TaverneDuDev/MoeBot)
 [![Sonar quality gate status](https://sonarcloud.io/api/badges/gate?key=fr.tavernedudev:bot-moe)](https://sonarcloud.io/dashboard?id=fr.tavernedudev%3Abot-moe)
-
+[![pipeline status](https://gitlab.com/sbeex/tdd-moebot/badges/master/pipeline.svg)](https://gitlab.com/sbeex/tdd-moebot/commits/master)
 
 
 
